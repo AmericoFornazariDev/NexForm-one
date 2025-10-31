@@ -6,6 +6,7 @@ import responseRoutes from './response.routes.js';
 import aiRoutes from './ai.routes.js';
 import questionRoutes from './question.routes.js';
 import reportRoutes from './report.routes.js';
+import exportRoutes from './export.routes.js';
 
 const router = Router();
 
@@ -16,6 +17,7 @@ router.use('/', questionRoutes);
 router.use('/forms', formRoutes);
 router.use('/forms', responseRoutes);
 router.use('/reports', reportRoutes);
+router.use('/export', exportRoutes);
 
 router.get('/', (req, res) => {
   res.json({ message: 'ok' });

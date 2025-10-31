@@ -5,6 +5,7 @@ const navigationLinks = [
   { to: "/dashboard", label: "Dashboard", icon: "🏠" },
   { to: "/forms", label: "Formulários", icon: "📄" },
   { to: "/plans", label: "Planos", icon: "💎" },
+  { to: "/reports/overview", label: "Relatórios", icon: "📊" },
 ];
 
 export default function Sidebar() {

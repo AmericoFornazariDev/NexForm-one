@@ -20,6 +20,8 @@ api.interceptors.request.use((config) => {
 export const getProfile = () => api.get("/profile");
 
 export const getForms = () => api.get("/forms");
+export const createForm = (payload) => api.post("/forms", payload);
+export const deleteForm = (formId) => api.delete(`/forms/${formId}`);
 
 export const getFormResponses = (formId) =>
   api.get(`/forms/${formId}/responses`);

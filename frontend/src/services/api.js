@@ -30,3 +30,15 @@ export const getPublicForm = (formId) => api.get(`/forms/${formId}`);
 
 export const respondToPublicForm = (formId, userInput) =>
   api.post(`/forms/${formId}/respond`, { user_input: userInput });
+
+export const getAIConfig = () => api.get("/ai/config");
+export const saveAIConfig = (payload) => api.post("/ai/config", payload);
+
+export const getFormDetails = (formId) => api.get(`/forms/${formId}`);
+export const getFormQuestions = (formId) =>
+  api.get(`/forms/${formId}/questions`);
+export const createFormQuestion = (formId, payload) =>
+  api.post(`/forms/${formId}/questions`, payload);
+export const updateQuestion = (questionId, payload) =>
+  api.put(`/questions/${questionId}`, payload);
+export const deleteQuestion = (questionId) => api.delete(`/questions/${questionId}`);

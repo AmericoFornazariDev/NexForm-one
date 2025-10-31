@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export default function FormCard({ form, onDelete }) {
   if (!form) return null;
 
@@ -14,16 +16,26 @@ export default function FormCard({ form, onDelete }) {
       {form.description && (
         <p className="text-sm text-slate-600 mb-3">{form.description}</p>
       )}
-      <div className="flex justify-between items-center text-sm text-slate-500">
+      <div className="flex flex-wrap items-center justify-between gap-3 text-sm text-slate-500">
         <span>Modo: {form.ai_mode}</span>
-        <button
-          type="button"
-          onClick={() => onDelete?.(form.id)}
-          className="text-red-600 hover:text-red-800"
-          aria-label="Eliminar formulário"
-        >
-          🗑️
-        </button>
+        <div className="flex items-center gap-2">
+          {form.id && (
+            <Link
+              to={`/forms/${form.id}/questions`}
+              className="rounded-lg border border-blue-100 px-3 py-1.5 text-blue-600 transition hover:bg-blue-50"
+            >
+              Perguntas
+            </Link>
+          )}
+          <button
+            type="button"
+            onClick={() => onDelete?.(form.id)}
+            className="text-red-600 hover:text-red-800"
+            aria-label="Eliminar formulário"
+          >
+            🗑️
+          </button>
+        </div>
       </div>
     </div>
   );

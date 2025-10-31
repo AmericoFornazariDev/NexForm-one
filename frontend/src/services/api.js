@@ -25,3 +25,8 @@ export const deleteForm = (formId) => api.delete(`/forms/${formId}`);
 
 export const getFormResponses = (formId) =>
   api.get(`/forms/${formId}/responses`);
+
+export const getPublicForm = (formId) => api.get(`/forms/${formId}`);
+
+export const respondToPublicForm = (formId, userInput) =>
+  api.post(`/forms/${formId}/respond`, { user_input: userInput });

@@ -1,39 +1,51 @@
-import { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { useContext, useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import Navbar from "../components/Navbar";
 import DashboardCard from "../components/DashboardCard";
-import { useAuth } from "../context/AuthContext";
-import { getForms, getProfile } from "../services/api";
+import { api } from "../services/api";
+import { AuthContext } from "../context/AuthContext";
+
+const INITIAL_STATS = {
+  forms: 0,
+  plan: "Free",
+  responses: 0,
+};
 
 export default function Dashboard() {
-  const { isAuthenticated, logout, user } = useAuth();
-  const [profile, setProfile] = useState(null);
-  const [formCount, setFormCount] = useState(0);
-  const [responsesCount, setResponsesCount] = useState(0);
+  const { token } = useContext(AuthContext);
+  const [stats, setStats] = useState(INITIAL_STATS);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (!token) {
+      setStats(INITIAL_STATS);
+      setIsLoading(false);
       return;
     }
 
     let isMounted = true;
 
-    async function loadDashboardData() {
+    const fetchDashboardData = async () => {
       setIsLoading(true);
+      setError(null);
 
       try {
         const [profileResponse, formsResponse] = await Promise.all([
-          getProfile(),
-          getForms(),
+          api.get("/profile", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          api.get("/forms", {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
         ]);
 
-        if (!isMounted) return;
+        if (!isMounted) {
+          return;
+        }
 
-        const profileData = profileResponse?.data ?? profileResponse ?? {};
-        const rawForms = formsResponse?.data ?? formsResponse ?? {};
-
+        const profileData = profileResponse?.data ?? {};
+        const rawForms = formsResponse?.data ?? [];
         const formsList = Array.isArray(rawForms)
           ? rawForms
           : Array.isArray(rawForms?.forms)
@@ -42,94 +54,108 @@ export default function Dashboard() {
           ? rawForms.data
           : [];
 
-        const totalResponses = formsList.reduce((total, form) => {
-          if (typeof form?.totalResponses === "number") {
-            return total + form.totalResponses;
+        const totalResponses = formsList.reduce((accumulator, form) => {
+          if (typeof form?.responses === "number") {
+            return accumulator + form.responses;
           }
 
           if (typeof form?.responsesCount === "number") {
-            return total + form.responsesCount;
+            return accumulator + form.responsesCount;
           }
 
           if (Array.isArray(form?.responses)) {
-            return total + form.responses.length;
+            return accumulator + form.responses.length;
           }
 
-          return total;
+          return accumulator;
         }, 0);
 
-        setProfile(profileData);
-        setFormCount(formsList.length);
-        setResponsesCount(totalResponses);
-      } catch (error) {
-        console.error("Failed to load dashboard data", error);
+        const planName = (() => {
+          if (!profileData?.plan) {
+            return "Free";
+          }
+
+          if (typeof profileData.plan === "string") {
+            return profileData.plan;
+          }
+
+          return (
+            profileData.plan?.name ||
+            profileData.plan?.title ||
+            profileData.plan?.label ||
+            "Free"
+          );
+        })();
+
+        const responsesFromProfile =
+          typeof profileData?.responses === "number"
+            ? profileData.responses
+            : typeof profileData?.responsesCount === "number"
+            ? profileData.responsesCount
+            : null;
+
+        setStats({
+          forms: formsList.length,
+          plan: planName,
+          responses: responsesFromProfile ?? totalResponses ?? 0,
+        });
+      } catch (err) {
+        if (!isMounted) {
+          return;
+        }
+
+        console.error("Erro ao carregar dados do dashboard", err);
+        setError("Não foi possível carregar os dados do dashboard.");
+        setStats((previous) => ({ ...previous, responses: 0 }));
       } finally {
         if (isMounted) {
           setIsLoading(false);
         }
       }
-    }
+    };
 
-    loadDashboardData();
+    fetchDashboardData();
 
     return () => {
       isMounted = false;
     };
-  }, [isAuthenticated]);
+  }, [token]);
 
-  const displayName = useMemo(() => {
-    const nameFromProfile = profile?.name ?? profile?.fullName;
-    const nameFromContext = user?.name ?? user?.fullName;
-
-    return nameFromProfile || nameFromContext || user?.email || "Utilizador";
-  }, [profile, user]);
-
-  const planName = useMemo(() => {
-    if (!profile) return "—";
-
-    if (typeof profile?.plan === "string") {
-      return profile.plan;
-    }
-
-    return (
-      profile?.plan?.name ||
-      profile?.plan?.title ||
-      profile?.plan?.label ||
-      "—"
-    );
-  }, [profile]);
-
-  if (!isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
+  const cards = useMemo(
+    () => [
+      { title: "Formulários", value: stats.forms, icon: "📝" },
+      { title: "Plano Atual", value: stats.plan, icon: "💎" },
+      { title: "Respostas", value: stats.responses, icon: "📨" },
+    ],
+    [stats]
+  );
 
   return (
     <div className="flex h-screen bg-slate-100">
-      <Sidebar onLogout={logout} />
+      <Sidebar />
       <div className="flex flex-1 flex-col">
-        <Navbar
-          userName={displayName}
-          onLogout={logout}
-          isLoadingProfile={isLoading && !profile}
-        />
+        <Navbar />
         <main className="flex-1 overflow-y-auto p-6">
+          {error && (
+            <div className="mb-6 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+              {error}
+            </div>
+          )}
+
           {isLoading ? (
-            <div className="rounded-xl bg-white p-6 text-center text-slate-500 shadow-sm">
+            <div className="rounded-xl bg-white p-6 text-center text-slate-500 shadow-md">
               A carregar estatísticas...
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-              <DashboardCard
-                title="Meus Formulários"
-                value={formCount}
-                icon="📄"
-              />
-              <DashboardCard title="Plano Atual" value={planName} icon="💎" />
-              <DashboardCard
-                title="Respostas Totais"
-                value={responsesCount}
-                icon="✉️"
-              />
+              {cards.map((card) => (
+                <DashboardCard
+                  key={card.title}
+                  title={card.title}
+                  value={card.value}
+                  icon={card.icon}
+                />
+              ))}
             </div>
           )}
         </main>

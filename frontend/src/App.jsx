@@ -12,6 +12,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import Forms from "./pages/Forms.jsx";
 import Plans from "./pages/Plans.jsx";
 import PublicForm from "./pages/PublicForm.jsx";
+import AISettings from "./pages/AISettings.jsx";
+import FormQuestions from "./pages/FormQuestions.jsx";
 
 function PrivateRoute() {
   const { isAuthenticated } = useAuth();
@@ -48,6 +50,8 @@ export default function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/forms" element={<Forms />} />
+            <Route path="/forms/:id/questions" element={<FormQuestions />} />
+            <Route path="/ai-settings" element={<AISettings />} />
             <Route path="/plans" element={<Plans />} />
           </Route>
 

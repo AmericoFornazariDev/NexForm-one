@@ -11,18 +11,19 @@ export const findUserByEmail = (email) => {
     .get(email);
 };
 
-export const createUser = (name, email, passwordHash) => {
+export const createUser = (name, email, passwordHash, planId = null) => {
   const db = getDb();
   const statement = db.prepare(
-    `INSERT INTO ${TABLE} (name, email, password_hash) VALUES (?, ?, ?)`
+    `INSERT INTO ${TABLE} (name, email, password_hash, plan_id) VALUES (?, ?, ?, ?)`
   );
-  const result = statement.run(name, email, passwordHash);
+  const result = statement.run(name, email, passwordHash, planId);
 
   return {
     id: Number(result.lastInsertRowid),
     name,
     email,
-    passwordHash
+    passwordHash,
+    planId
   };
 };
 
@@ -35,8 +36,16 @@ export const getUserById = (id) => {
     .get(id);
 };
 
+export const updateUserPlan = (id, planId) => {
+  const db = getDb();
+  const statement = db.prepare(`UPDATE ${TABLE} SET plan_id = ? WHERE id = ?`);
+  const result = statement.run(planId, id);
+  return result.changes > 0;
+};
+
 export const UserModel = {
   findUserByEmail,
   createUser,
-  getUserById
+  getUserById,
+  updateUserPlan
 };

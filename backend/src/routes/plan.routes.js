@@ -1,9 +1,10 @@
 import { Router } from 'express';
-import { listPlans, getPlan } from '../controllers/plan.controller.js';
+import { listPlans, upgradePlan } from '../controllers/plan.controller.js';
+import { authenticate } from '../middleware/auth.middleware.js';
 
 const router = Router();
 
 router.get('/', listPlans);
-router.get('/:id', getPlan);
+router.post('/upgrade', authenticate, upgradePlan);
 
 export default router;

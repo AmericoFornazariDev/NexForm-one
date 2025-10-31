@@ -42,3 +42,9 @@ export const createFormQuestion = (formId, payload) =>
 export const updateQuestion = (questionId, payload) =>
   api.put(`/questions/${questionId}`, payload);
 export const deleteQuestion = (questionId) => api.delete(`/questions/${questionId}`);
+
+export const getReportOverview = (formId) =>
+  api.get(`/reports/${formId}/overview`);
+
+export const generateReportInsights = (formId) =>
+  api.post(`/reports/${formId}/insights`);

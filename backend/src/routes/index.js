@@ -10,7 +10,7 @@ const router = Router();
 router.use('/', authRoutes);
 router.use('/', planRoutes);
 router.use('/forms', formRoutes);
-router.use('/responses', responseRoutes);
+router.use('/forms', responseRoutes);
 router.use('/ai', aiRoutes);
 
 router.get('/', (req, res) => {

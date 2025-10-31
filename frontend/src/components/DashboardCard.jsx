@@ -1,13 +1,11 @@
 export default function DashboardCard({ title, value, icon }) {
   return (
-    <div className="bg-white shadow-md p-6 rounded-xl text-center">
-      <div className="text-3xl mb-3" aria-hidden="true">
+    <div className="bg-white shadow-md p-6 rounded-xl text-center hover:shadow-lg transition">
+      <div className="text-4xl mb-2" aria-hidden="true">
         {icon}
       </div>
-      <p className="text-sm font-semibold tracking-wide text-slate-500 uppercase">
-        {title}
-      </p>
-      <p className="mt-2 text-3xl font-bold text-slate-900">{value}</p>
+      <h2 className="text-lg font-semibold text-slate-700">{title}</h2>
+      <p className="text-2xl font-bold text-blue-600">{value}</p>
     </div>
   );
 }

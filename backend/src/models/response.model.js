@@ -7,6 +7,10 @@ const parseData = (value) => {
     return null;
   }
 
+  if (typeof value === 'object') {
+    return value;
+  }
+
   try {
     return JSON.parse(value);
   } catch (error) {
@@ -58,7 +62,32 @@ export const getResponsesByForm = (formId) => {
   return rows.map(mapResponse).filter(Boolean);
 };
 
+export const getRecentAnswers = (formId, limit = 5) => {
+  const db = getDb();
+  const rows = db
+    .prepare(
+      `SELECT id, form_id, data, created_at FROM ${TABLE} WHERE form_id = ? ORDER BY created_at DESC LIMIT ?`
+    )
+    .all(Number(formId), Number(limit));
+
+  return rows
+    .map(mapResponse)
+    .filter(Boolean)
+    .map((response) => {
+      const payload = response.data ?? {};
+      return {
+        question_id: payload.question_id ?? null,
+        type: payload.type ?? null,
+        question: payload.question ?? payload.prompt ?? null,
+        answer: payload.answer ?? payload.user_input ?? payload.reply ?? null
+      };
+    })
+    .filter((item) => item.question || item.answer)
+    .reverse();
+};
+
 export const ResponseModel = {
   saveResponse,
-  getResponsesByForm
+  getResponsesByForm,
+  getRecentAnswers
 };

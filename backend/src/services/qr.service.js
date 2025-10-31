@@ -8,6 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const PUBLIC_DIR = path.resolve(__dirname, '../../public');
 const QR_CODES_DIR = path.join(PUBLIC_DIR, 'qrcodes');
+const PUBLIC_BASE_URL = 'https://nexform.app';
 
 const ensureQrDirectory = () => {
   if (!fs.existsSync(QR_CODES_DIR)) {
@@ -15,7 +16,7 @@ const ensureQrDirectory = () => {
   }
 };
 
-const buildPublicUrl = (fileName) => `/public/qrcodes/${fileName}`;
+const buildPublicUrl = (fileName) => `${PUBLIC_BASE_URL}/public/qrcodes/${fileName}`;
 
 const buildFilePathFromUrl = (qrUrl) => {
   if (!qrUrl) {

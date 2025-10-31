@@ -1,27 +1,32 @@
 import { FormModel } from '../models/form.model.js';
-import { PlanService } from '../services/plan.service.js';
+import { checkPlanLimit } from '../services/plan.service.js';
 import { generateQRCode, deleteQRCodeFile } from '../services/qr.service.js';
 
 const ALLOWED_AI_MODES = ['llama', 'gpt'];
 
-const normalizeAiMode = (aiMode) => {
-  if (!aiMode) {
+const buildResponsePayload = (form) => {
+  if (!form) {
+    return null;
+  }
+
+  const { id, title, description, qr_url: qrUrl, ai_mode: aiMode } = form;
+
+  return {
+    id,
+    title,
+    description,
+    qr_url: qrUrl,
+    ai_mode: aiMode
+  };
+};
+
+const normalizeAiMode = (value) => {
+  if (!value) {
     return 'llama';
   }
 
-  const normalized = String(aiMode).toLowerCase();
+  const normalized = String(value).toLowerCase();
   return ALLOWED_AI_MODES.includes(normalized) ? normalized : null;
-};
-
-export const listForms = (req, res) => {
-  const userId = req.user?.id;
-
-  if (!userId) {
-    return res.status(401).json({ message: 'Unauthorized' });
-  }
-
-  const forms = FormModel.getFormsByUserId(userId);
-  return res.json(forms);
 };
 
 export const createForm = async (req, res) => {
@@ -32,53 +37,68 @@ export const createForm = async (req, res) => {
   }
 
   const { title, description = '', ai_mode: aiModeInput } = req.body ?? {};
-  const normalizedDescription =
-    typeof description === 'string' ? description : String(description ?? '');
 
-  if (!title || typeof title !== 'string') {
-    return res.status(400).json({ message: 'Title is required' });
+  if (!title || typeof title !== 'string' || !title.trim()) {
+    return res.status(400).json({ message: 'Invalid title' });
+  }
+
+  if (typeof description !== 'string') {
+    return res.status(400).json({ message: 'Invalid description' });
   }
 
   const aiMode = normalizeAiMode(aiModeInput);
 
   if (!aiMode) {
-    return res.status(400).json({ message: 'Invalid ai_mode provided' });
+    return res.status(400).json({ message: 'Invalid ai_mode' });
   }
 
-  const canCreate = PlanService.checkPlanLimit(userId);
+  const withinPlan = checkPlanLimit(userId);
 
-  if (!canCreate) {
-    return res.status(403).json({ message: 'Form limit reached for the current plan' });
+  if (!withinPlan) {
+    return res.status(403).json({ message: 'Plan limit reached' });
   }
 
   try {
-    const sanitizedTitle = title.trim();
+    const form = FormModel.createForm(
+      userId,
+      title.trim(),
+      description.trim(),
+      aiMode,
+      null
+    );
 
-    if (!sanitizedTitle) {
-      return res.status(400).json({ message: 'Title is required' });
-    }
+    const qrUrl = await generateQRCode(form.id);
+    const formWithQr = FormModel.updateQrUrl(form.id, qrUrl);
 
-    const createdForm = FormModel.createForm(userId, sanitizedTitle, normalizedDescription, aiMode);
-
-    const qrUrl = await generateQRCode(createdForm.id);
-    const formWithQr = FormModel.updateQrUrl(createdForm.id, qrUrl);
-
-    return res.status(201).json(formWithQr);
+    return res.status(201).json(buildResponsePayload(formWithQr));
   } catch (error) {
     console.error('Failed to create form:', error);
     return res.status(500).json({ message: 'Failed to create form' });
   }
 };
 
-export const getForm = (req, res) => {
+export const getForms = (req, res) => {
+  const userId = req.user?.id;
+
+  if (!userId) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  const forms = FormModel.getFormsByUser(userId)
+    .map(buildResponsePayload)
+    .filter(Boolean);
+  return res.json(forms);
+};
+
+export const getFormById = (req, res) => {
   const { id } = req.params;
-  const form = FormModel.getFormById(Number(id));
+  const form = FormModel.getFormById(id);
 
   if (!form) {
     return res.status(404).json({ message: 'Form not found' });
   }
 
-  return res.json(form);
+  return res.json(buildResponsePayload(form));
 };
 
 export const deleteForm = (req, res) => {
@@ -89,22 +109,22 @@ export const deleteForm = (req, res) => {
     return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  const form = FormModel.getFormById(Number(id));
+  const form = FormModel.getFormById(id);
 
   if (!form) {
     return res.status(404).json({ message: 'Form not found' });
   }
 
-  if (form.userId !== Number(userId)) {
-    return res.status(403).json({ message: 'Not allowed to delete this form' });
+  if (form.user_id !== Number(userId)) {
+    return res.status(403).json({ message: 'Forbidden' });
   }
 
-  const deleted = FormModel.deleteFormById(form.id);
+  const deleted = FormModel.deleteForm(form.id, userId);
 
-  if (deleted) {
-    deleteQRCodeFile(form.qrUrl);
-    return res.status(204).send();
+  if (!deleted) {
+    return res.status(500).json({ message: 'Failed to delete form' });
   }
 
-  return res.status(500).json({ message: 'Failed to delete form' });
+  deleteQRCodeFile(form.qr_url);
+  return res.status(204).send();
 };

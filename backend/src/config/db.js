@@ -57,6 +57,45 @@ const createTables = (db) => {
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (form_id) REFERENCES forms (id)
     );
+
+    CREATE TABLE IF NOT EXISTS ai_config (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      tone TEXT DEFAULT 'simpático',
+      style TEXT DEFAULT 'curta',
+      goal TEXT DEFAULT 'satisfação geral',
+      ai_mode TEXT DEFAULT 'llama',
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (user_id) REFERENCES users (id)
+    );
+
+    CREATE TABLE IF NOT EXISTS merchant_questions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      form_id INTEGER NOT NULL,
+      user_id INTEGER NOT NULL,
+      question TEXT NOT NULL,
+      sort_order INTEGER DEFAULT 0,
+      is_required INTEGER DEFAULT 0,
+      is_active INTEGER DEFAULT 1,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS asked_questions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      form_id INTEGER NOT NULL,
+      question_id INTEGER NOT NULL,
+      response_id INTEGER,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
+      FOREIGN KEY (question_id) REFERENCES merchant_questions (id) ON DELETE CASCADE,
+      FOREIGN KEY (response_id) REFERENCES responses (id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_mq_form ON merchant_questions(form_id, sort_order);
+    CREATE INDEX IF NOT EXISTS idx_ai_cfg_user ON ai_config(user_id);
+    CREATE INDEX IF NOT EXISTS idx_asked_form ON asked_questions(form_id);
   `);
 };
 

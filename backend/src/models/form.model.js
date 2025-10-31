@@ -9,23 +9,35 @@ const mapForm = (row) => {
 
   return {
     id: Number(row.id),
-    userId: Number(row.user_id),
+    user_id: Number(row.user_id),
     title: row.title,
     description: row.description,
-    qrUrl: row.qr_url,
-    aiMode: row.ai_mode,
-    createdAt: row.created_at
+    qr_url: row.qr_url,
+    ai_mode: row.ai_mode,
+    created_at: row.created_at
   };
 };
 
-export const createForm = (userId, title, description, aiMode = 'llama') => {
+export const createForm = (
+  userId,
+  title,
+  description,
+  aiMode = 'llama',
+  qrUrl = null
+) => {
   const db = getDb();
   const numericUserId = Number(userId);
   const statement = db.prepare(
-    `INSERT INTO ${TABLE} (user_id, title, description, ai_mode) VALUES (?, ?, ?, ?)`
+    `INSERT INTO ${TABLE} (user_id, title, description, ai_mode, qr_url) VALUES (?, ?, ?, ?, ?)`
   );
 
-  const result = statement.run(numericUserId, title, description, aiMode);
+  const result = statement.run(
+    numericUserId,
+    title,
+    description,
+    aiMode,
+    qrUrl
+  );
 
   return getFormById(Number(result.lastInsertRowid));
 };
@@ -37,18 +49,7 @@ export const updateQrUrl = (formId, qrUrl) => {
   return getFormById(Number(formId));
 };
 
-export const getFormById = (id) => {
-  const db = getDb();
-  const row = db
-    .prepare(
-      `SELECT id, user_id, title, description, qr_url, ai_mode, created_at FROM ${TABLE} WHERE id = ?`
-    )
-    .get(id);
-
-  return mapForm(row);
-};
-
-export const getFormsByUserId = (userId) => {
+export const getFormsByUser = (userId) => {
   const db = getDb();
   const numericUserId = Number(userId);
   const rows = db
@@ -60,17 +61,28 @@ export const getFormsByUserId = (userId) => {
   return rows.map(mapForm);
 };
 
-export const deleteFormById = (id) => {
+export const getFormById = (id) => {
   const db = getDb();
-  const statement = db.prepare(`DELETE FROM ${TABLE} WHERE id = ?`);
-  const result = statement.run(Number(id));
+  const row = db
+    .prepare(
+      `SELECT id, user_id, title, description, qr_url, ai_mode, created_at FROM ${TABLE} WHERE id = ?`
+    )
+    .get(Number(id));
+
+  return mapForm(row);
+};
+
+export const deleteForm = (id, userId) => {
+  const db = getDb();
+  const statement = db.prepare(`DELETE FROM ${TABLE} WHERE id = ? AND user_id = ?`);
+  const result = statement.run(Number(id), Number(userId));
   return result.changes > 0;
 };
 
 export const FormModel = {
   createForm,
   updateQrUrl,
+  getFormsByUser,
   getFormById,
-  getFormsByUserId,
-  deleteFormById
+  deleteForm
 };

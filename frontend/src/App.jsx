@@ -16,6 +16,7 @@ import AISettings from "./pages/AISettings.jsx";
 import FormQuestions from "./pages/FormQuestions.jsx";
 import Reports from "./pages/Reports.jsx";
 import ReportsOverview from "./pages/ReportsOverview.jsx";
+import SentimentAnalytics from "./pages/SentimentAnalytics.jsx";
 
 function PrivateRoute() {
   const { isAuthenticated } = useAuth();
@@ -57,6 +58,7 @@ export default function App() {
             <Route path="/plans" element={<Plans />} />
             <Route path="/reports/overview" element={<ReportsOverview />} />
             <Route path="/reports/:formId" element={<Reports />} />
+            <Route path="/sentiment/:formId" element={<SentimentAnalytics />} />
           </Route>
 
           <Route path="/form/:id" element={<PublicForm />} />

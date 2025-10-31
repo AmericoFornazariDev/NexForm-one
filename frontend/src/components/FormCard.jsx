@@ -27,6 +27,14 @@ export default function FormCard({ form, onDelete }) {
               Perguntas
             </Link>
           )}
+          {form.id && (
+            <Link
+              to={`/sentiment/${form.id}`}
+              className="rounded-lg border border-emerald-100 px-3 py-1.5 text-emerald-600 transition hover:bg-emerald-50"
+            >
+              Sentimentos
+            </Link>
+          )}
           <button
             type="button"
             onClick={() => onDelete?.(form.id)}

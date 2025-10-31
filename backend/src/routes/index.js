@@ -7,6 +7,7 @@ import aiRoutes from './ai.routes.js';
 import questionRoutes from './question.routes.js';
 import reportRoutes from './report.routes.js';
 import exportRoutes from './export.routes.js';
+import sentimentRoutes from './sentiment.routes.js';
 
 const router = Router();
 
@@ -18,6 +19,7 @@ router.use('/forms', formRoutes);
 router.use('/forms', responseRoutes);
 router.use('/reports', reportRoutes);
 router.use('/export', exportRoutes);
+router.use('/sentiment', sentimentRoutes);
 
 router.get('/', (req, res) => {
   res.json({ message: 'ok' });

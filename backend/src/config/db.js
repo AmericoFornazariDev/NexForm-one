@@ -58,6 +58,17 @@ const createTables = (db) => {
       FOREIGN KEY (form_id) REFERENCES forms (id)
     );
 
+    CREATE TABLE IF NOT EXISTS sentiment_analysis (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      form_id INTEGER NOT NULL,
+      response_id INTEGER NOT NULL,
+      sentiment TEXT CHECK(sentiment IN ('positivo','neutro','negativo')),
+      confidence REAL DEFAULT 0,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+      FOREIGN KEY (form_id) REFERENCES forms (id) ON DELETE CASCADE,
+      FOREIGN KEY (response_id) REFERENCES responses (id) ON DELETE CASCADE
+    );
+
     CREATE TABLE IF NOT EXISTS ai_config (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id INTEGER NOT NULL,
@@ -96,6 +107,7 @@ const createTables = (db) => {
     CREATE INDEX IF NOT EXISTS idx_mq_form ON merchant_questions(form_id, sort_order);
     CREATE INDEX IF NOT EXISTS idx_ai_cfg_user ON ai_config(user_id);
     CREATE INDEX IF NOT EXISTS idx_asked_form ON asked_questions(form_id);
+    CREATE INDEX IF NOT EXISTS idx_sent_form ON sentiment_analysis(form_id);
   `);
 };
 

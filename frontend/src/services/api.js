@@ -48,3 +48,9 @@ export const getReportOverview = (formId) =>
 
 export const generateReportInsights = (formId) =>
   api.post(`/reports/${formId}/insights`);
+
+export const getSentimentTrend = (formId) =>
+  api.get(`/sentiment/${formId}/trend`);
+
+export const analyzeFormSentiment = (formId, payload = {}) =>
+  api.post(`/sentiment/analyze/${formId}`, payload);

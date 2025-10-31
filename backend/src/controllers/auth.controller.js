@@ -7,6 +7,7 @@ import {
   findUserByEmail,
   getUserById
 } from '../models/user.model.js';
+import { getPlanByName } from '../models/plan.model.js';
 
 const registerSchema = z.object({
   name: z.string().min(1, { message: 'Name is required' }),
@@ -29,7 +30,9 @@ export const register = (req, res) => {
     }
 
     const passwordHash = bcrypt.hashSync(password, 10);
-    createUser(name, email, passwordHash);
+    const freePlan = getPlanByName('Free');
+    const planId = freePlan?.id ?? null;
+    createUser(name, email, passwordHash, planId);
 
     return res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {

@@ -4,5 +4,6 @@ dotenv.config();
 
 export const ENV = {
   PORT: process.env.PORT ?? '3000',
-  JWT_SECRET: process.env.JWT_SECRET ?? 'changeme'
+  jwtSecret: process.env.JWT_SECRET ?? 'chave_secreta_segura',
+  tokenExpiresIn: process.env.TOKEN_EXPIRES_IN ?? '2h'
 };

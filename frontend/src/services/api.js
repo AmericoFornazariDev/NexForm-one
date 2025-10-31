@@ -16,3 +16,10 @@ api.interceptors.request.use((config) => {
 
   return config;
 });
+
+export const getProfile = () => api.get("/profile");
+
+export const getForms = () => api.get("/forms");
+
+export const getFormResponses = (formId) =>
+  api.get(`/forms/${formId}/responses`);

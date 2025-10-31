@@ -1,65 +1,54 @@
-import { z } from 'zod';
-import {
-  getAvailablePlans,
-  upgradeUserPlan
-} from '../services/plan.service.js';
+import { planModel } from '../models/plan.model.js';
+import { updateUserPlan } from '../models/user.model.js';
 
-const upgradeSchema = z.object({
-  plan_id: z.coerce
-    .number({ invalid_type_error: 'plan_id must be a number' })
-    .int({ message: 'plan_id must be an integer' })
-    .positive({ message: 'plan_id must be positive' })
-});
-
-const toApiPlan = (plan) => ({
-  id: plan.id,
-  name: plan.name,
-  price: plan.price,
-  max_forms: plan.maxForms,
-  max_ai_tokens: plan.maxAiTokens
-});
-
-export const listPlans = (req, res) => {
+export const getPlans = (req, res) => {
   try {
-    const plans = getAvailablePlans();
-    return res.json(plans.map(toApiPlan));
+    const plans = planModel.getAllPlans();
+    return res.json(plans);
   } catch (error) {
-    console.error('List plans error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error('Erro ao listar planos:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };
 
 export const upgradePlan = (req, res) => {
   try {
     if (!req.user?.id) {
-      return res.status(401).json({ message: 'Unauthorized' });
+      return res.status(401).json({ message: 'Não autorizado' });
     }
 
-    const { plan_id } = upgradeSchema.parse(req.body);
+    const { plan_id: planIdInput } = req.body ?? {};
 
-    const plan = upgradeUserPlan(req.user.id, plan_id);
+    if (planIdInput === undefined) {
+      return res.status(400).json({ message: 'plan_id é obrigatório' });
+    }
+
+    const planId = Number(planIdInput);
+
+    if (!Number.isInteger(planId) || planId <= 0) {
+      return res
+        .status(400)
+        .json({ message: 'plan_id deve ser um número inteiro positivo' });
+    }
+
+    const plan = planModel.getPlanById(planId);
+
+    if (!plan) {
+      return res.status(404).json({ message: 'Plano não encontrado' });
+    }
+
+    const updated = updateUserPlan(req.user.id, planId);
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Utilizador não encontrado' });
+    }
 
     return res.json({
       message: 'Plano atualizado com sucesso',
       plan: plan.name
     });
   } catch (error) {
-    if (error instanceof z.ZodError) {
-      return res.status(400).json({
-        message: 'Validation failed',
-        errors: error.issues
-      });
-    }
-
-    if (error.code === 'PLAN_NOT_FOUND') {
-      return res.status(404).json({ message: 'Plan not found' });
-    }
-
-    if (error.code === 'USER_NOT_FOUND') {
-      return res.status(404).json({ message: 'User not found' });
-    }
-
-    console.error('Upgrade plan error:', error);
-    return res.status(500).json({ message: 'Internal server error' });
+    console.error('Erro ao atualizar plano:', error);
+    return res.status(500).json({ message: 'Erro interno do servidor' });
   }
 };

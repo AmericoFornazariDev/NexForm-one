@@ -1,47 +1,17 @@
-import { PlanModel } from '../models/plan.model.js';
-import { getUserById, updateUserPlan } from '../models/user.model.js';
+import { planModel } from '../models/plan.model.js';
+import { getUserById } from '../models/user.model.js';
 import { getDb } from '../config/db.js';
-
-export const getAvailablePlans = () => {
-  return PlanModel.getAllPlans();
-};
-
-export const upgradeUserPlan = (userId, planId) => {
-  const user = getUserById(userId);
-  if (!user) {
-    const error = new Error('User not found');
-    error.code = 'USER_NOT_FOUND';
-    throw error;
-  }
-
-  const plan = PlanModel.getPlanById(planId);
-  if (!plan) {
-    const error = new Error('Plan not found');
-    error.code = 'PLAN_NOT_FOUND';
-    throw error;
-  }
-
-  updateUserPlan(userId, planId);
-
-  return plan;
-};
 
 export const checkPlanLimit = (userId) => {
   const user = getUserById(userId);
+
   if (!user) {
-    const error = new Error('User not found');
-    error.code = 'USER_NOT_FOUND';
-    throw error;
+    return false;
   }
 
-  const plan = PlanModel.getPlanById(user.planId);
-  if (!plan) {
-    const error = new Error('Plan not found');
-    error.code = 'PLAN_NOT_FOUND';
-    throw error;
-  }
+  const plan = user.planId ? planModel.getPlanById(user.planId) : null;
 
-  if (plan.maxForms === -1) {
+  if (!plan || plan.max_forms == null) {
     return true;
   }
 
@@ -52,11 +22,9 @@ export const checkPlanLimit = (userId) => {
 
   const totalForms = row?.total ?? 0;
 
-  return totalForms < plan.maxForms;
+  return Number(totalForms) < Number(plan.max_forms);
 };
 
 export const PlanService = {
-  getAvailablePlans,
-  upgradeUserPlan,
   checkPlanLimit
 };

@@ -8,7 +8,7 @@ import aiRoutes from './ai.routes.js';
 const router = Router();
 
 router.use('/', authRoutes);
-router.use('/plans', planRoutes);
+router.use('/', planRoutes);
 router.use('/forms', formRoutes);
 router.use('/responses', responseRoutes);
 router.use('/ai', aiRoutes);

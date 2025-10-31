@@ -7,14 +7,12 @@ const mapPlan = (row) => {
     return null;
   }
 
-  const maxForms = row.max_forms === null ? -1 : row.max_forms;
-
   return {
     id: row.id,
     name: row.name,
     price: row.price,
-    maxForms,
-    maxAiTokens: row.max_ai_tokens
+    max_forms: row.max_forms,
+    max_ai_tokens: row.max_ai_tokens
   };
 };
 
@@ -61,9 +59,11 @@ export const createPlan = (name, price, maxForms, maxAiTokens) => {
   return getPlanById(Number(result.lastInsertRowid));
 };
 
-export const PlanModel = {
+export const planModel = {
   getAllPlans,
   getPlanById,
   getPlanByName,
   createPlan
 };
+
+export const PlanModel = planModel;

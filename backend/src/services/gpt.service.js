@@ -1,7 +1,16 @@
 import '../config/env.js';
 
 const OPENAI_API_URL = 'https://api.openai.com/v1/chat/completions';
-const FALLBACK_MODEL = process.env.AI_MODEL?.trim() || 'gpt-4o-mini';
+
+const resolveModel = () => {
+  const model = process.env.AI_MODEL?.trim();
+
+  if (!model) {
+    throw new Error('AI model is not configured');
+  }
+
+  return model;
+};
 
 const normalizeMessages = (input) => {
   if (Array.isArray(input)) {
@@ -47,11 +56,10 @@ export const generateReply = async (messagesInput) => {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-        'OpenAI-Project': 'proj_0Kjh6hPXuP1StF05T3F3lOVV'
+        Authorization: `Bearer ${apiKey}`
       },
       body: JSON.stringify({
-        model: FALLBACK_MODEL,
+        model: resolveModel(),
         messages
       })
     });

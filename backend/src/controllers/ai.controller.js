@@ -10,7 +10,7 @@ const toneEnum = ['simpático', 'formal', 'técnico', 'motivacional'];
 const styleEnum = ['curta', 'detalhada', 'analítica'];
 const modeEnum = ['llama', 'gpt'];
 
-const AI_TIMEOUT_MS = 7000;
+const AI_TIMEOUT_MS = 8000;
 const AI_FALLBACK_QUESTION = 'Pode por favor explicar em uma única frase o que o incomodou mais?';
 
 const configSchema = z.object({
@@ -194,9 +194,25 @@ export const generateQuestion = async (req, res) => {
   }
 };
 
+export const ping = async (req, res) => {
+  try {
+    const reply = await generateGptReply([{ role: 'user', content: 'diz OK' }]);
+    const normalizedReply = typeof reply === 'string' ? reply.trim() : '';
+
+    return res.json({
+      status: 'OK',
+      reply: normalizedReply || 'OK'
+    });
+  } catch (error) {
+    console.error('Failed to ping AI service:', error);
+    return res.status(500).json({ message: 'Failed to ping AI service' });
+  }
+};
+
 export const AiController = {
   getConfig,
   saveConfig,
   getNextQuestion,
-  generateQuestion
+  generateQuestion,
+  ping
 };

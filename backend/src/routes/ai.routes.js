@@ -9,5 +9,6 @@ router.get('/ai/config', authenticate, initAiConfig, AiController.getConfig);
 router.post('/ai/config', authenticate, initAiConfig, AiController.saveConfig);
 router.post('/ai/generate', authenticate, initAiConfig, AiController.generateQuestion);
 router.post('/forms/:id/next', AiController.getNextQuestion);
+router.get('/ai/ping', AiController.ping);
 
 export default router;

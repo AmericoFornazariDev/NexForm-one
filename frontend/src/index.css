@@ -1,3 +1,19 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-nexform-surface text-nexform-text;
+  }
+
+  body {
+    @apply min-h-screen bg-nexform-surface font-sans antialiased;
+  }
+
+  ::selection {
+    @apply bg-violet-500/20 text-nexform-text;
+  }
+}

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { BarChart3, Clock, MoveRight } from "lucide-react";
 import ExportButtons from "./ExportButtons";
 
 const formatDate = (value) => {
@@ -16,26 +17,40 @@ const formatDate = (value) => {
 
 export default function GlobalReportCard({ form, onExportPDF, onExportCSV }) {
   return (
-    <div className="bg-white shadow p-4 rounded-xl flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-      <div>
-        <h2 className="text-lg font-semibold text-slate-700">{form.title}</h2>
-        <p className="text-sm text-slate-500">
-          Respostas: {form.responses ?? 0} · NPS: {form.nps ?? "Sem dados"}
-        </p>
-        <p className="text-xs text-slate-400 mt-1">Última atualização: {formatDate(form.updated)}</p>
-      </div>
-      <div className="flex items-center gap-3">
+    <article className="group flex flex-col gap-6 rounded-2xl bg-white p-6 shadow-lg shadow-violet-100 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl">
+      <header className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+        <div className="flex items-start gap-3">
+          <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-violet-100 text-violet-600 shadow-sm shadow-violet-100">
+            <BarChart3 className="h-5 w-5" />
+          </span>
+          <div>
+            <h2 className="text-lg font-semibold text-slate-800">{form.title}</h2>
+            <p className="text-sm text-slate-500">
+              {form.responses ?? 0} respostas · NPS {form.nps ?? "Sem dados"}
+            </p>
+            <p className="mt-2 inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs text-slate-500">
+              <Clock className="h-3.5 w-3.5" /> Última atualização: {formatDate(form.updated)}
+            </p>
+          </div>
+        </div>
         <ExportButtons
           onPdf={() => onExportPDF(form.id)}
           onCsv={() => onExportCSV(form.id)}
         />
+      </header>
+
+      <footer className="flex items-center justify-between text-sm">
+        <span className="text-slate-500">
+          {form.description || "Resumo disponível com insights automáticos."}
+        </span>
         <Link
           to={`/reports/${form.id}`}
-          className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1 rounded transition text-sm"
+          className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 px-4 py-2 font-medium text-slate-600 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
         >
-          🔍 Ver Detalhes
+          Ver detalhes
+          <MoveRight className="h-4 w-4" />
         </Link>
-      </div>
-    </div>
+      </footer>
+    </article>
   );
 }

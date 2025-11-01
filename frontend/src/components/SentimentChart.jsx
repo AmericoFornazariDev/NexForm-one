@@ -20,24 +20,23 @@ export default function SentimentChart({ data }) {
   const hasValues = chartData.some((item) => item.value > 0);
 
   return (
-    <div className="bg-white p-6 rounded-xl shadow h-full">
-      <h2 className="text-lg font-semibold text-slate-700 mb-4">
-        Distribuição de Sentimentos
-      </h2>
+    <div className="group h-full rounded-3xl bg-white p-6 shadow-lg shadow-violet-100 transition-all duration-300 ease-in-out hover:-translate-y-1 hover:shadow-xl">
+      <h2 className="text-lg font-semibold text-slate-900">Distribuição de Sentimentos</h2>
+      <p className="mb-6 text-sm text-slate-500">Resumo geral das perceções dos utilizadores</p>
       {hasValues ? (
         <ResponsiveContainer width="100%" height={250}>
           <PieChart>
-            <Pie data={chartData} dataKey="value" nameKey="label" outerRadius={90}>
+            <Pie data={chartData} dataKey="value" nameKey="label" innerRadius={60} outerRadius={90} paddingAngle={4}>
               {chartData.map((_, index) => (
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
-            <Tooltip formatter={(value) => `${value}`} />
-            <Legend />
+            <Tooltip contentStyle={{ borderRadius: "1rem", borderColor: "#E5E7EB" }} formatter={(value) => `${value} respostas`} />
+            <Legend formatter={(value) => <span className="text-slate-500">{value}</span>} />
           </PieChart>
         </ResponsiveContainer>
       ) : (
-        <div className="h-[250px] flex items-center justify-center text-slate-500">
+        <div className="flex h-[250px] items-center justify-center rounded-2xl bg-slate-50 text-sm text-slate-500">
           Sem dados suficientes para apresentar.
         </div>
       )}

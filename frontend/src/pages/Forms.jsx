@@ -1,99 +1,167 @@
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import Sidebar from "../components/Sidebar.jsx";
+import Navbar from "../components/Navbar.jsx";
+import FormCard from "../components/FormCard.jsx";
+import FormModal from "../components/FormModal.jsx";
+
+const TOKEN_KEY = "token";
 
 export default function Forms() {
   const [forms, setForms] = useState([]);
-  const [newForm, setNewForm] = useState({
-    title: "",
-    description: "",
-    ai_mode: "llama"
-  });
-  const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [status, setStatus] = useState(null);
+  const [error, setError] = useState(null);
 
-  async function loadForms() {
+  const token = useMemo(() => localStorage.getItem(TOKEN_KEY), []);
+
+  const loadForms = async () => {
+    if (!token) {
+      setForms([]);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
     try {
-      const res = await axios.get("http://localhost:5000/api/forms", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      const response = await axios.get("http://localhost:5000/api/forms", {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setForms(res.data);
+
+      const data = response?.data ?? [];
+      setForms(Array.isArray(data) ? data : data?.data ?? []);
     } catch (err) {
       console.error("Erro ao carregar formulários:", err);
+      setError("Não foi possível carregar os formulários. Tente novamente em instantes.");
+    } finally {
+      setIsLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     loadForms();
-  }, []);
+  }, [token]);
 
-  async function handleCreateForm() {
-    if (!newForm.title.trim()) return alert("O título é obrigatório");
-    setLoading(true);
+  const handleSaveForm = async (payload) => {
+    if (!token) {
+      setError("É necessário iniciar sessão para criar um formulário.");
+      setStatus(null);
+      return;
+    }
+
     try {
-      const res = await axios.post("http://localhost:5000/api/forms", newForm, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` }
+      setStatus("A criar novo formulário...");
+      const response = await axios.post("http://localhost:5000/api/forms", payload, {
+        headers: { Authorization: `Bearer ${token}` },
       });
-      setForms([...forms, res.data]);
-      setNewForm({ title: "", description: "", ai_mode: "llama" });
+
+      const newForm = response?.data;
+      setForms((previous) => [...previous, newForm].filter(Boolean));
+      setError(null);
+      setStatus("Formulário criado com sucesso!");
     } catch (err) {
       console.error("Erro ao criar formulário:", err);
-      alert("Erro ao criar formulário");
+      setError("Não foi possível criar o formulário. Verifique os dados e tente novamente.");
+      setStatus(null);
+      throw err;
     } finally {
-      setLoading(false);
+      setTimeout(() => setStatus(null), 3000);
     }
-  }
+  };
+
+  const handleDeleteForm = async (formId) => {
+    if (!token || !formId) {
+      return;
+    }
+
+    const confirmed = window.confirm("Deseja mesmo eliminar este formulário?");
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await axios.delete(`http://localhost:5000/api/forms/${formId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      setForms((previous) => previous.filter((form) => form.id !== formId));
+      setError(null);
+      setStatus("Formulário removido.");
+      setTimeout(() => setStatus(null), 2500);
+    } catch (err) {
+      console.error("Erro ao eliminar formulário:", err);
+      setError("Não foi possível eliminar o formulário neste momento.");
+      setStatus(null);
+    }
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4 text-slate-700">Meus Formulários</h1>
+    <div className="flex min-h-screen bg-nexform-surface">
+      <Sidebar />
+      <div className="flex flex-1 flex-col">
+        <Navbar title="Formulários" />
+        <main className="flex-1 overflow-y-auto px-6 py-8 md:px-10">
+          <section className="rounded-3xl bg-gradient-to-br from-violet-500 to-indigo-600 px-6 py-8 text-white shadow-lg shadow-violet-200">
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold">Construa experiências inteligentes</h1>
+                <p className="mt-1 max-w-2xl text-sm text-violet-100">
+                  Organize os seus formulários, acompanhe respostas em tempo real e ofereça interações assistidas por IA aos seus clientes.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="inline-flex items-center gap-2 rounded-2xl bg-white px-5 py-3 font-semibold text-violet-600 shadow-md shadow-violet-200 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-xl"
+              >
+                + Criar Formulário
+              </button>
+            </div>
+          </section>
 
-      <div className="bg-white p-4 rounded-xl shadow mb-6 space-y-3">
-        <input
-          type="text"
-          placeholder="Título do formulário"
-          value={newForm.title}
-          onChange={(e) => setNewForm({ ...newForm, title: e.target.value })}
-          className="border rounded p-2 w-full"
+          {status ? (
+            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-5 py-3 text-sm text-emerald-700 shadow-sm">
+              {status}
+            </div>
+          ) : null}
+
+          {error ? (
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/80 px-5 py-3 text-sm text-red-600 shadow-sm">
+              {error}
+            </div>
+          ) : null}
+
+          <section className="mt-8">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl font-semibold text-slate-800">Formulários criados</h2>
+              <span className="text-sm font-medium text-slate-500">
+                {isLoading ? "A carregar..." : `${forms.length} ${forms.length === 1 ? "formulário" : "formulários"}`}
+              </span>
+            </div>
+
+            <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
+              {forms.length === 0 && !isLoading ? (
+                <div className="col-span-full rounded-3xl border-2 border-dashed border-slate-200 bg-white/70 px-6 py-12 text-center text-slate-500 shadow-inner">
+                  Ainda não existem formulários. Clique em "Criar Formulário" para começar.
+                </div>
+              ) : (
+                forms.map((form) => (
+                  <FormCard key={form.id ?? form.title} form={form} onDelete={handleDeleteForm} />
+                ))
+              )}
+            </div>
+          </section>
+        </main>
+      </div>
+
+      {isModalOpen ? (
+        <FormModal
+          onClose={() => setIsModalOpen(false)}
+          onSave={handleSaveForm}
         />
-        <textarea
-          placeholder="Descrição (opcional)"
-          value={newForm.description}
-          onChange={(e) => setNewForm({ ...newForm, description: e.target.value })}
-          className="border rounded p-2 w-full"
-        ></textarea>
-        <select
-          value={newForm.ai_mode}
-          onChange={(e) => setNewForm({ ...newForm, ai_mode: e.target.value })}
-          className="border rounded p-2 w-full"
-        >
-          <option value="llama">LLaMA</option>
-          <option value="gpt">GPT</option>
-        </select>
-
-        <button
-          onClick={handleCreateForm}
-          disabled={loading}
-          className="bg-blue-600 text-white px-6 py-2 rounded"
-        >
-          {loading ? "A criar..." : "Salvar novo formulário"}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {forms.map((form) => (
-          <div key={form.id} className="bg-white p-4 rounded-xl shadow text-center">
-            <h2 className="font-semibold text-slate-700">{form.title}</h2>
-            <p className="text-slate-500 mb-2">{form.description}</p>
-            {form.qr_code && (
-              <img
-                src={form.qr_code}
-                alt="QR Code"
-                className="w-32 h-32 mx-auto mb-2 rounded shadow"
-              />
-            )}
-            <p className="text-xs text-slate-400 break-all">{`/forms/${form.id}`}</p>
-          </div>
-        ))}
-      </div>
+      ) : null}
     </div>
   );
 }

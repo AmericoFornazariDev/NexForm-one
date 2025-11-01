@@ -123,20 +123,23 @@ export default function SentimentAnalytics() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-nexform-surface">
       <Sidebar />
       <div className="flex flex-1 flex-col">
-        <Navbar />
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-semibold text-slate-800">
-              Sentimento das Respostas
-            </h1>
+        <Navbar title="Sentimentos" />
+        <main className="flex-1 overflow-y-auto px-6 py-8 md:px-10">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <h1 className="text-2xl font-semibold text-slate-900">Sentimento das Respostas</h1>
+              <p className="text-sm text-slate-500">
+                Acompanhe a perceção do público e atualize as análises com IA quando necessário.
+              </p>
+            </div>
             <button
               type="button"
               onClick={handleRefresh}
               disabled={isRefreshing || !formId}
-              className="flex items-center gap-2 rounded bg-emerald-600 px-4 py-2 font-medium text-white transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+              className="inline-flex items-center gap-2 rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 px-5 py-2.5 font-semibold text-white shadow-lg shadow-violet-200 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-300 disabled:cursor-not-allowed disabled:opacity-40"
             >
               <span aria-hidden="true">🔄</span>
               {isRefreshing ? "Analisando..." : "Atualizar Sentimentos (IA)"}
@@ -144,19 +147,19 @@ export default function SentimentAnalytics() {
           </div>
 
           {statusMessage && (
-            <div className="rounded-lg border border-emerald-200 bg-emerald-50 p-4 text-sm text-emerald-700">
+            <div className="mt-6 rounded-2xl border border-emerald-200 bg-emerald-50/80 px-5 py-3 text-sm text-emerald-700 shadow-sm">
               {statusMessage}
             </div>
           )}
 
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/80 px-5 py-3 text-sm text-red-700 shadow-sm">
               {error}
             </div>
           )}
 
           {isLoading ? (
-            <div className="rounded-xl bg-white p-6 text-center text-slate-500 shadow">
+            <div className="rounded-3xl bg-white p-8 text-center text-slate-500 shadow-lg shadow-violet-100">
               Carregando dados de sentimento...
             </div>
           ) : (
@@ -167,7 +170,7 @@ export default function SentimentAnalytics() {
           )}
 
           {!isLoading && !hasTrendData && (
-            <div className="rounded-xl bg-white p-6 text-center text-slate-500 shadow">
+            <div className="rounded-3xl bg-white p-6 text-center text-slate-500 shadow-lg shadow-violet-100">
               Nenhum sentimento foi registado ainda para este formulário.
             </div>
           )}

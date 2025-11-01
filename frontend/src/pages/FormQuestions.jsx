@@ -177,36 +177,36 @@ export default function FormQuestions() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-nexform-surface">
       <Sidebar />
       <div className="flex flex-1 flex-col">
-        <Navbar />
-        <main className="flex-1 overflow-y-auto p-6">
+        <Navbar title="Perguntas do Formulário" />
+        <main className="flex-1 overflow-y-auto px-6 py-8 md:px-10">
           <div className="mx-auto max-w-4xl">
-            <header className="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <header className="mb-8 flex flex-wrap items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl font-semibold text-slate-800">Perguntas do Formulário</h1>
+                <h1 className="text-2xl font-semibold text-slate-900">Organize as suas perguntas</h1>
                 {formTitle && (
-                  <p className="text-sm text-slate-600">Formulário: {formTitle}</p>
+                  <p className="text-sm text-slate-500">Formulário selecionado: {formTitle}</p>
                 )}
               </div>
               <button
                 type="button"
                 onClick={() => navigate(-1)}
-                className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-100"
+                className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
               >
                 Voltar
               </button>
             </header>
 
             {error && (
-              <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/80 px-5 py-3 text-sm text-red-700 shadow-sm">
                 {error}
               </div>
             )}
 
-            <section className="mb-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-              <h2 className="text-lg font-semibold text-slate-800">Nova pergunta</h2>
+            <section className="mb-8 rounded-3xl border border-slate-200 bg-white p-6 shadow-lg shadow-violet-100">
+              <h2 className="text-lg font-semibold text-slate-900">Nova pergunta</h2>
               <form className="mt-4 grid gap-4" onSubmit={handleCreateQuestion}>
                 <label className="flex flex-col text-sm font-medium text-slate-700">
                   Pergunta
@@ -214,7 +214,7 @@ export default function FormQuestions() {
                     value={newQuestion.question}
                     onChange={handleFieldChange("question")}
                     rows={3}
-                    className="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                    className="mt-1 rounded-2xl border border-slate-200 px-3 py-2 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
                     required
                   />
                 </label>
@@ -227,7 +227,7 @@ export default function FormQuestions() {
                       min={0}
                       value={newQuestion.sort_order}
                       onChange={handleFieldChange("sort_order")}
-                      className="mt-1 rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+                      className="mt-1 rounded-2xl border border-slate-200 px-3 py-2 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
                       required
                     />
                   </label>
@@ -237,7 +237,7 @@ export default function FormQuestions() {
                       type="checkbox"
                       checked={newQuestion.is_required}
                       onChange={handleFieldChange("is_required")}
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                     />
                     Obrigatória
                   </label>
@@ -247,7 +247,7 @@ export default function FormQuestions() {
                       type="checkbox"
                       checked={newQuestion.is_active}
                       onChange={handleFieldChange("is_active")}
-                      className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
                     />
                     Ativa
                   </label>
@@ -256,7 +256,7 @@ export default function FormQuestions() {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300 md:w-auto"
+                  className="w-full rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-violet-200 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-300 disabled:cursor-not-allowed disabled:opacity-40 md:w-auto"
                 >
                   {isSubmitting ? "A adicionar..." : "Adicionar"}
                 </button>
@@ -264,9 +264,9 @@ export default function FormQuestions() {
             </section>
 
             <section className="space-y-4">
-              <h2 className="text-lg font-semibold text-slate-800">Perguntas existentes</h2>
+              <h2 className="text-lg font-semibold text-slate-900">Perguntas existentes</h2>
               {isLoading ? (
-                <div className="rounded-2xl border border-slate-200 bg-white p-6 text-center text-slate-500 shadow-sm">
+                <div className="rounded-3xl border border-slate-200 bg-white p-6 text-center text-slate-500 shadow-lg shadow-violet-100">
                   A carregar perguntas...
                 </div>
               ) : questions.length ? (
@@ -280,9 +280,9 @@ export default function FormQuestions() {
                       onEdit={handleEditQuestion}
                       onDelete={handleDeleteQuestion}
                     />
-                  ))
+                ))
               ) : (
-                <p className="text-sm text-slate-600">Nenhuma pergunta adicionada ainda.</p>
+                <p className="text-sm text-slate-500">Nenhuma pergunta adicionada ainda.</p>
               )}
             </section>
           </div>

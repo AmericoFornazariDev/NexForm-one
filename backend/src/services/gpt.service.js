@@ -42,29 +42,42 @@ export const generateReply = async (messagesInput) => {
     throw new Error('Messages array must contain at least one entry');
   }
 
-  const response = await fetch(OPENAI_API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`
-    },
-    body: JSON.stringify({
-      model: FALLBACK_MODEL,
-      messages
-    })
-  });
+  try {
+    const response = await fetch(OPENAI_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${apiKey}`,
+        'OpenAI-Project': 'proj_0Kjh6hPXuP1StF05T3F3lOVV'
+      },
+      body: JSON.stringify({
+        model: FALLBACK_MODEL,
+        messages
+      })
+    });
 
-  if (!response.ok) {
-    const errorText = await response.text().catch(() => '');
-    throw new Error(`OpenAI API request failed with status ${response.status}: ${errorText}`);
+    if (!response.ok) {
+      const errorText = await response.text().catch(() => '');
+      const error = new Error(
+        `OpenAI API request failed with status ${response.status}: ${errorText}`
+      );
+      error.status = response.status;
+      throw error;
+    }
+
+    const data = await response.json();
+    const content = data?.choices?.[0]?.message?.content;
+
+    if (!content || typeof content !== 'string') {
+      throw new Error('OpenAI response does not contain valid content');
+    }
+
+    return content.trim();
+  } catch (error) {
+    console.log('GPT request failed', {
+      status: error?.status ?? error?.response?.status ?? 'unknown',
+      error
+    });
+    throw error;
   }
-
-  const data = await response.json();
-  const content = data?.choices?.[0]?.message?.content;
-
-  if (!content || typeof content !== 'string') {
-    throw new Error('OpenAI response does not contain valid content');
-  }
-
-  return content.trim();
 };

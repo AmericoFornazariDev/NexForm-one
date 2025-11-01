@@ -4,7 +4,8 @@ import { useAuth } from "../context/AuthContext";
 const navigationLinks = [
   { to: "/dashboard", label: "Dashboard", icon: "🏠" },
   { to: "/forms", label: "Formulários", icon: "📄" },
-  { to: "/plans", label: "Planos", icon: "💎" },
+  { to: "/plans", label: "Planos", icon: "💳" },
+  { to: "/ai-settings", label: "Configurar IA", icon: "🤖" },
   { to: "/reports/overview", label: "Relatórios", icon: "📊" },
 ];
 

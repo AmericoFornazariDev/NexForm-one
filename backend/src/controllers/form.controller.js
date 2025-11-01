@@ -1,6 +1,6 @@
+import QRCode from 'qrcode';
 import { FormModel } from '../models/form.model.js';
 import { checkPlanLimit } from '../services/plan.service.js';
-import { generateQRCode, deleteQRCodeFile } from '../services/qr.service.js';
 
 const ALLOWED_AI_MODES = ['llama', 'gpt'];
 
@@ -9,13 +9,14 @@ const buildResponsePayload = (form) => {
     return null;
   }
 
-  const { id, title, description, qr_url: qrUrl, ai_mode: aiMode } = form;
+  const { id, title, description, qr_url: qrUrl, qr_code: qrCode, ai_mode: aiMode } = form;
 
   return {
     id,
     title,
     description,
     qr_url: qrUrl,
+    qr_code: qrCode,
     ai_mode: aiMode
   };
 };
@@ -67,8 +68,13 @@ export const createForm = async (req, res) => {
       null
     );
 
-    const qrUrl = await generateQRCode(form.id);
-    const formWithQr = FormModel.updateQrUrl(form.id, qrUrl);
+    const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const formLink = `${baseUrl}/form/${form.id}`;
+    const qrCodeData = await QRCode.toDataURL(formLink);
+
+    const formWithQr = FormModel.updateQrCode(form.id, qrCodeData);
+
+    formWithQr.qr_code = qrCodeData;
 
     return res.status(201).json(buildResponsePayload(formWithQr));
   } catch (error) {
@@ -125,6 +131,5 @@ export const deleteForm = (req, res) => {
     return res.status(500).json({ message: 'Failed to delete form' });
   }
 
-  deleteQRCodeFile(form.qr_url);
   return res.status(204).send();
 };

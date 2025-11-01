@@ -7,7 +7,7 @@ import { OrchestratorService } from '../services/ai/orchestrator.service.js';
 import { generateReply as generateGptReply } from '../services/gpt.service.js';
 import { generateReply as generateLlamaReply } from '../services/ai/llama.service.js';
 
-const AI_TIMEOUT_MS = 2000;
+const AI_TIMEOUT_MS = 8000;
 const AI_FALLBACK_QUESTION = 'Pode por favor explicar em uma única frase o que o incomodou mais?';
 
 const withTimeout = (promise, timeoutMs) =>

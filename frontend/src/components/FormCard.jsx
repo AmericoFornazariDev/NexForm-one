@@ -6,12 +6,14 @@ export default function FormCard({ form, onDelete }) {
   return (
     <div className="bg-white p-4 rounded-xl shadow-md hover:shadow-lg transition">
       <h2 className="text-lg font-semibold mb-2">{form.title}</h2>
-      {form.qr_url && (
-        <img
-          src={form.qr_url}
-          alt={`QR Code para ${form.title}`}
-          className="mx-auto w-32 h-32 mb-3 object-contain"
-        />
+      {form.qr_code && (
+        <div className="flex justify-center mt-4">
+          <img
+            src={form.qr_code}
+            alt="QR Code do Formulário"
+            className="w-32 h-32 rounded-lg shadow"
+          />
+        </div>
       )}
       {form.description && (
         <p className="text-sm text-slate-600 mb-3">{form.description}</p>

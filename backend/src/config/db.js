@@ -44,6 +44,7 @@ const createTables = (db) => {
       title TEXT,
       description TEXT,
       qr_url TEXT,
+      qr_code TEXT,
       ai_mode TEXT DEFAULT 'llama',
       created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
       FOREIGN KEY (user_id) REFERENCES users (id)
@@ -111,6 +112,15 @@ const createTables = (db) => {
   `);
 };
 
+const ensureFormsQrCodeColumn = (db) => {
+  const columns = db.prepare('PRAGMA table_info(forms)').all();
+  const hasQrCode = columns.some((column) => column.name === 'qr_code');
+
+  if (!hasQrCode) {
+    db.exec('ALTER TABLE forms ADD COLUMN qr_code TEXT;');
+  }
+};
+
 const seedPlans = (db) => {
   const row = db.prepare('SELECT COUNT(*) as count FROM plans').get();
   if (row.count === 0) {
@@ -136,6 +146,7 @@ export const getDb = () => {
     ensureDatabaseFile();
     dbInstance = new Database(dbFilePath);
     createTables(dbInstance);
+    ensureFormsQrCodeColumn(dbInstance);
     seedPlans(dbInstance);
   }
   return dbInstance;

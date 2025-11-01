@@ -13,6 +13,7 @@ const mapForm = (row) => {
     title: row.title,
     description: row.description,
     qr_url: row.qr_url,
+    qr_code: row.qr_code,
     ai_mode: row.ai_mode,
     created_at: row.created_at
   };
@@ -23,12 +24,13 @@ export const createForm = (
   title,
   description,
   aiMode = 'llama',
-  qrUrl = null
+  qrUrl = null,
+  qrCode = null
 ) => {
   const db = getDb();
   const numericUserId = Number(userId);
   const statement = db.prepare(
-    `INSERT INTO ${TABLE} (user_id, title, description, ai_mode, qr_url) VALUES (?, ?, ?, ?, ?)`
+    `INSERT INTO ${TABLE} (user_id, title, description, ai_mode, qr_url, qr_code) VALUES (?, ?, ?, ?, ?, ?)`
   );
 
   const result = statement.run(
@@ -36,16 +38,17 @@ export const createForm = (
     title,
     description,
     aiMode,
-    qrUrl
+    qrUrl,
+    qrCode
   );
 
   return getFormById(Number(result.lastInsertRowid));
 };
 
-export const updateQrUrl = (formId, qrUrl) => {
+export const updateQrCode = (formId, qrCode) => {
   const db = getDb();
-  const statement = db.prepare(`UPDATE ${TABLE} SET qr_url = ? WHERE id = ?`);
-  statement.run(qrUrl, Number(formId));
+  const statement = db.prepare(`UPDATE ${TABLE} SET qr_code = ? WHERE id = ?`);
+  statement.run(qrCode, Number(formId));
   return getFormById(Number(formId));
 };
 
@@ -54,7 +57,7 @@ export const getFormsByUser = (userId) => {
   const numericUserId = Number(userId);
   const rows = db
     .prepare(
-      `SELECT id, user_id, title, description, qr_url, ai_mode, created_at FROM ${TABLE} WHERE user_id = ? ORDER BY created_at DESC`
+      `SELECT id, user_id, title, description, qr_url, qr_code, ai_mode, created_at FROM ${TABLE} WHERE user_id = ? ORDER BY created_at DESC`
     )
     .all(numericUserId);
 
@@ -65,7 +68,7 @@ export const getFormById = (id) => {
   const db = getDb();
   const row = db
     .prepare(
-      `SELECT id, user_id, title, description, qr_url, ai_mode, created_at FROM ${TABLE} WHERE id = ?`
+      `SELECT id, user_id, title, description, qr_url, qr_code, ai_mode, created_at FROM ${TABLE} WHERE id = ?`
     )
     .get(Number(id));
 
@@ -81,7 +84,7 @@ export const deleteForm = (id, userId) => {
 
 export const FormModel = {
   createForm,
-  updateQrUrl,
+  updateQrCode,
   getFormsByUser,
   getFormById,
   deleteForm

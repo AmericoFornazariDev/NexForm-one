@@ -117,33 +117,33 @@ export default function Reports() {
   };
 
   return (
-    <div className="flex h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-nexform-surface">
       <Sidebar />
       <div className="flex flex-1 flex-col">
-        <Navbar />
-        <main className="flex-1 overflow-y-auto p-6 space-y-6">
+        <Navbar title="Relatório detalhado" />
+        <main className="flex-1 overflow-y-auto px-6 py-8 md:px-10">
           {error && (
-            <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
+            <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/80 px-5 py-3 text-sm text-red-700 shadow-sm">
               {error}
             </div>
           )}
 
           {isLoading ? (
-            <div className="rounded-xl bg-white p-6 text-center text-slate-500 shadow">
+            <div className="rounded-3xl bg-white p-8 text-center text-slate-500 shadow-lg shadow-violet-100">
               A carregar relatório...
             </div>
           ) : (
             <>
               <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-                <StatCard title="Total de Respostas" value={totals.responses} />
-                <StatCard title="Últimos 7 dias" value={totals.last7d} />
-                <StatCard title="Últimos 30 dias" value={totals.last30d} />
+                <StatCard title="Total de Respostas" value={totals.responses} helper="Somatório histórico" />
+                <StatCard title="Últimos 7 dias" value={totals.last7d} helper="Engajamento semanal" />
+                <StatCard title="Últimos 30 dias" value={totals.last30d} helper="Panorama mensal" />
               </div>
 
               {hasNpsData ? (
                 <NPSChart data={npsData} />
               ) : (
-                <div className="rounded-xl bg-white p-6 text-center text-slate-500 shadow">
+                <div className="rounded-3xl bg-white p-6 text-center text-slate-500 shadow-lg shadow-violet-100">
                   Sem dados suficientes de NPS para apresentar.
                 </div>
               )}
@@ -155,7 +155,7 @@ export default function Reports() {
                   type="button"
                   onClick={generateInsights}
                   disabled={isGeneratingInsights}
-                  className="rounded bg-blue-600 px-6 py-2 font-medium text-white transition hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+                  className="rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 px-6 py-3 font-semibold text-white shadow-lg shadow-violet-200 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-300 disabled:cursor-not-allowed disabled:opacity-40"
                 >
                   {isGeneratingInsights ? "Gerando Insights..." : "Gerar Insights IA"}
                 </button>

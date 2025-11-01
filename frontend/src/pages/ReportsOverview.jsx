@@ -32,28 +32,52 @@ export default function ReportsOverview() {
   }, []);
 
   return (
-    <div className="flex min-h-screen bg-slate-100">
+    <div className="flex min-h-screen bg-nexform-surface">
       <Sidebar />
       <div className="flex flex-col flex-1">
-        <Navbar />
-        <main className="p-6 space-y-4 overflow-y-auto">
-          <h1 className="text-2xl font-semibold text-slate-700">Relatórios Globais</h1>
-          {loading && <p className="text-slate-500">A carregar dados...</p>}
-          {error && (
-            <p className="text-red-500 bg-red-50 border border-red-200 p-3 rounded">{error}</p>
-          )}
-          {!loading && !error && forms.length === 0 && (
-            <p className="text-slate-500">Ainda não existem respostas para gerar relatórios.</p>
-          )}
-          {!loading && !error &&
-            forms.map((form) => (
-              <GlobalReportCard
-                key={form.id}
-                form={form}
-                onExportPDF={exportPDF}
-                onExportCSV={exportCSV}
-              />
-            ))}
+        <Navbar title="Relatórios" />
+        <main className="overflow-y-auto px-6 py-8 md:px-10">
+          <section className="rounded-3xl bg-gradient-to-r from-violet-500 to-indigo-600 px-6 py-8 text-white shadow-lg shadow-violet-200">
+            <div className="space-y-3">
+              <h1 className="text-2xl font-semibold">Relatórios globais</h1>
+              <p className="max-w-2xl text-sm text-violet-100">
+                Visualize rapidamente o desempenho dos seus formulários com dados consolidados, exportações rápidas e insights acionáveis.
+              </p>
+            </div>
+          </section>
+
+          {loading ? (
+            <div className="mt-8 grid gap-4 md:grid-cols-2">
+              {[0, 1].map((index) => (
+                <div key={index} className="h-48 animate-pulse rounded-3xl bg-white/70 shadow-lg shadow-violet-100" />
+              ))}
+            </div>
+          ) : null}
+
+          {error ? (
+            <div className="mt-8 rounded-2xl border border-red-200 bg-red-50/80 px-5 py-3 text-sm text-red-600 shadow-sm">
+              {error}
+            </div>
+          ) : null}
+
+          {!loading && !error ? (
+            <section className="mt-8 space-y-4">
+              {forms.length === 0 ? (
+                <div className="rounded-3xl border-2 border-dashed border-slate-200 bg-white/70 px-6 py-12 text-center text-slate-500">
+                  Ainda não existem respostas para gerar relatórios.
+                </div>
+              ) : (
+                forms.map((form) => (
+                  <GlobalReportCard
+                    key={form.id}
+                    form={form}
+                    onExportPDF={exportPDF}
+                    onExportCSV={exportCSV}
+                  />
+                ))
+              )}
+            </section>
+          ) : null}
         </main>
       </div>
     </div>

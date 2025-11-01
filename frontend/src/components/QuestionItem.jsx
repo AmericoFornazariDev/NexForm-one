@@ -72,7 +72,7 @@ export default function QuestionItem({ item, onEdit, onDelete }) {
     return (
       <form
         onSubmit={handleSubmit}
-        className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
+        className="rounded-2xl border border-slate-200 bg-white p-5 shadow-lg shadow-violet-100"
       >
         <div className="mb-3">
           <label className="flex flex-col text-sm font-medium text-slate-700">
@@ -81,7 +81,7 @@ export default function QuestionItem({ item, onEdit, onDelete }) {
               value={formData.question}
               onChange={handleChange("question")}
               rows={3}
-              className="mt-1 rounded-lg border border-slate-200 px-3 py-2 text-slate-700 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              className="mt-1 rounded-2xl border border-slate-200 px-3 py-2 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
             />
           </label>
         </div>
@@ -94,7 +94,7 @@ export default function QuestionItem({ item, onEdit, onDelete }) {
               min={0}
               value={formData.sort_order}
               onChange={handleChange("sort_order")}
-              className="mt-1 rounded-lg border border-slate-200 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-100"
+              className="mt-1 rounded-2xl border border-slate-200 px-3 py-2 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
             />
           </label>
 
@@ -103,7 +103,7 @@ export default function QuestionItem({ item, onEdit, onDelete }) {
               type="checkbox"
               checked={formData.is_required}
               onChange={handleChange("is_required")}
-              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
             />
             Obrigatória
           </label>
@@ -113,24 +113,24 @@ export default function QuestionItem({ item, onEdit, onDelete }) {
               type="checkbox"
               checked={formData.is_active}
               onChange={handleChange("is_active")}
-              className="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                      className="h-4 w-4 rounded border-slate-300 text-violet-600 focus:ring-violet-500"
             />
             Ativa
           </label>
         </div>
 
-        <div className="flex items-center justify-end gap-2">
+        <div className="flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={() => setIsEditing(false)}
-            className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+            className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-blue-300"
+            className="rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 px-4 py-2 text-sm font-medium text-white shadow shadow-violet-200 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lg hover:shadow-violet-300 disabled:cursor-not-allowed disabled:opacity-40"
           >
             {isSubmitting ? "A guardar..." : "Guardar"}
           </button>
@@ -140,33 +140,33 @@ export default function QuestionItem({ item, onEdit, onDelete }) {
   }
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-lg shadow-violet-100 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-xl sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-sm font-medium text-slate-800">{item?.question}</p>
         <p className="text-xs text-slate-500">Ordem: {item?.sort_order ?? 0}</p>
         <div className="mt-2 flex flex-wrap gap-2 text-xs">
           {item?.is_required && (
-            <span className="rounded-full bg-red-100 px-2 py-1 text-red-700">Obrigatória</span>
+            <span className="rounded-full bg-rose-50 px-2 py-1 text-rose-600">Obrigatória</span>
           )}
           {item?.is_active ? (
-            <span className="rounded-full bg-green-100 px-2 py-1 text-green-700">Ativa</span>
+            <span className="rounded-full bg-emerald-50 px-2 py-1 text-emerald-600">Ativa</span>
           ) : (
             <span className="rounded-full bg-slate-200 px-2 py-1 text-slate-600">Inativa</span>
           )}
         </div>
       </div>
-      <div className="flex items-center gap-2 self-end sm:self-center">
+      <div className="flex items-center gap-3 self-end sm:self-center">
         <button
           type="button"
           onClick={() => setIsEditing(true)}
-          className="rounded-lg border border-slate-200 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100"
+          className="rounded-2xl border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:border-violet-200 hover:bg-violet-50 hover:text-violet-700"
         >
           Editar
         </button>
         <button
           type="button"
           onClick={handleDelete}
-          className="rounded-lg border border-red-200 px-3 py-2 text-sm text-red-600 hover:bg-red-50"
+          className="rounded-2xl border border-rose-200 px-4 py-2 text-sm font-medium text-rose-600 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:bg-rose-50"
         >
           Eliminar
         </button>

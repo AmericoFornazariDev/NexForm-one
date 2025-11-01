@@ -31,20 +31,20 @@ export default function Register() {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-slate-100 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h1 className="text-3xl font-semibold text-center mb-2">Criar conta</h1>
-        <p className="text-center text-slate-500 mb-6">Preencha os campos para começar a usar o NexForm</p>
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-violet-100 via-white to-indigo-100 px-4 py-10">
+      <div className="w-full max-w-md rounded-3xl bg-white/90 p-8 shadow-2xl shadow-violet-100 backdrop-blur">
+        <h1 className="text-center text-3xl font-semibold text-violet-700">Criar conta</h1>
+        <p className="mt-2 text-center text-sm text-slate-500">Preencha os campos para começar a usar o NexForm</p>
 
         {error && (
-          <div className="mb-4 rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-600">
+          <div className="mt-6 rounded-2xl border border-red-200 bg-red-50/80 px-5 py-3 text-sm text-red-600 shadow-sm">
             {error}
           </div>
         )}
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
+        <form className="mt-6 space-y-5" onSubmit={handleSubmit}>
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="name">
+            <label className="mb-1 block text-sm font-medium text-slate-600" htmlFor="name">
               Nome
             </label>
             <input
@@ -54,14 +54,14 @@ export default function Register() {
               required
               value={formData.name}
               onChange={handleChange}
-              className="w-full border border-slate-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
               placeholder="Nome completo"
               autoComplete="name"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="email">
+            <label className="mb-1 block text-sm font-medium text-slate-600" htmlFor="email">
               Email
             </label>
             <input
@@ -71,14 +71,14 @@ export default function Register() {
               required
               value={formData.email}
               onChange={handleChange}
-              className="w-full border border-slate-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
               placeholder="email@exemplo.com"
               autoComplete="email"
             />
           </div>
 
           <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700" htmlFor="password">
+            <label className="mb-1 block text-sm font-medium text-slate-600" htmlFor="password">
               Password
             </label>
             <input
@@ -88,7 +88,7 @@ export default function Register() {
               required
               value={formData.password}
               onChange={handleChange}
-              className="w-full border border-slate-300 p-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
               placeholder="••••••••"
               autoComplete="new-password"
             />
@@ -97,15 +97,15 @@ export default function Register() {
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed text-white p-2 rounded-md font-semibold transition"
+            className="w-full rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 px-4 py-3 font-semibold text-white shadow-lg shadow-violet-200 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-300 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isSubmitting ? "A criar conta..." : "Criar Conta"}
           </button>
         </form>
 
-        <p className="text-center text-sm mt-6 text-slate-600">
+        <p className="mt-6 text-center text-sm text-slate-500">
           Já tem conta? {" "}
-          <Link to="/login" className="text-blue-600 font-medium hover:underline">
+          <Link to="/login" className="font-medium text-violet-600 hover:underline">
             Entrar
           </Link>
         </p>

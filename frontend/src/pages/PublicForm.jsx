@@ -46,7 +46,10 @@ export default function PublicForm() {
     setAnswer("");
 
     try {
-      const res = await axios.post(`http://localhost:5000/api/forms/${id}/respond`, { answer });
+      const res = await axios.post(`http://localhost:5000/api/forms/${id}/respond`, {
+        answer,
+        question_id: chat.length + 1,
+      });
       const next = res.data.next?.question;
       if (next) {
         setChat([...newChat, { type: "ai", text: next }]);

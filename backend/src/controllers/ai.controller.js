@@ -10,7 +10,7 @@ const toneEnum = ['simpático', 'formal', 'técnico', 'motivacional'];
 const styleEnum = ['curta', 'detalhada', 'analítica'];
 const modeEnum = ['llama', 'gpt'];
 
-const AI_TIMEOUT_MS = 2000;
+const AI_TIMEOUT_MS = 7000;
 const AI_FALLBACK_QUESTION = 'Pode por favor explicar em uma única frase o que o incomodou mais?';
 
 const configSchema = z.object({

@@ -11,7 +11,7 @@ import Register from "./pages/Register.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import Forms from "./pages/Forms.jsx";
 import Plans from "./pages/Plans.jsx";
-import PublicForm from "./pages/PublicForm.jsx";
+import PublicForm from "./pages/PublicForm";
 import AISettings from "./pages/AISettings.jsx";
 import FormQuestions from "./pages/FormQuestions.jsx";
 import Reports from "./pages/Reports.jsx";
@@ -61,7 +61,7 @@ export default function App() {
             <Route path="/sentiment/:formId" element={<SentimentAnalytics />} />
           </Route>
 
-          <Route path="/form/:id" element={<PublicForm />} />
+          <Route path="/forms/:id" element={<PublicForm />} />
         </Routes>
       </AuthProvider>
     </Router>

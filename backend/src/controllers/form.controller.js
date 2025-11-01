@@ -1,4 +1,5 @@
 import QRCode from 'qrcode';
+import { getDb } from '../config/db.js';
 import { FormModel } from '../models/form.model.js';
 import { checkPlanLimit } from '../services/plan.service.js';
 
@@ -60,23 +61,23 @@ export const createForm = async (req, res) => {
   }
 
   try {
-    const form = FormModel.createForm(
-      userId,
-      title.trim(),
-      description.trim(),
-      aiMode,
-      null
+    const db = getDb();
+    const stmt = db.prepare(
+      'INSERT INTO forms (title, description, ai_mode, user_id) VALUES (?, ?, ?, ?)'
     );
+    const result = stmt.run(title.trim(), description.trim(), aiMode, userId);
+
+    const formId = result.lastInsertRowid;
 
     const baseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-    const formLink = `${baseUrl}/form/${form.id}`;
+    const formLink = `${baseUrl}/forms/${formId}`;
     const qrCodeData = await QRCode.toDataURL(formLink);
 
-    const formWithQr = FormModel.updateQrCode(form.id, qrCodeData);
+    db.prepare('UPDATE forms SET qr_code = ? WHERE id = ?').run(qrCodeData, formId);
 
-    formWithQr.qr_code = qrCodeData;
+    const form = FormModel.getFormById(formId);
 
-    return res.status(201).json(buildResponsePayload(formWithQr));
+    return res.status(201).json(buildResponsePayload({ ...form, qr_code: qrCodeData }));
   } catch (error) {
     console.error('Failed to create form:', error);
     return res.status(500).json({ message: 'Failed to create form' });

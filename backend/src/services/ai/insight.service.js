@@ -1,5 +1,5 @@
 import { generateReply as generateLlamaReply } from './llama.service.js';
-import { generateReply as generateGptReply } from './gpt.service.js';
+import { generateReply as generateGptReply } from '../gpt.service.js';
 
 const SUPPORTED_AI_MODES = ['llama', 'gpt'];
 
@@ -87,7 +87,7 @@ const parseInsightResponse = (raw) => {
 
 const requestAiSummary = async (mode, prompt) => {
   if (mode === 'gpt') {
-    return generateGptReply(prompt);
+    return generateGptReply([{ role: 'user', content: prompt }]);
   }
   return generateLlamaReply(prompt);
 };

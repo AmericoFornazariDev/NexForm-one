@@ -3,10 +3,15 @@ import { AiConfigModel } from '../models/ai_config.model.js';
 import { FormModel } from '../models/form.model.js';
 import { ResponseModel } from '../models/response.model.js';
 import { OrchestratorService } from '../services/ai/orchestrator.service.js';
+import { generateReply as generateGptReply } from '../services/gpt.service.js';
+import { generateReply as generateLlamaReply } from '../services/ai/llama.service.js';
 
 const toneEnum = ['simpático', 'formal', 'técnico', 'motivacional'];
 const styleEnum = ['curta', 'detalhada', 'analítica'];
 const modeEnum = ['llama', 'gpt'];
+
+const AI_TIMEOUT_MS = 2000;
+const AI_FALLBACK_QUESTION = 'Pode por favor explicar em uma única frase o que o incomodou mais?';
 
 const configSchema = z.object({
   tone: z.enum(toneEnum),
@@ -14,6 +19,91 @@ const configSchema = z.object({
   goal: z.string().min(1).max(500),
   ai_mode: z.enum(modeEnum)
 });
+
+const withTimeout = (promise, timeoutMs) => {
+  return new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('AI generation timeout'));
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
+};
+
+const requestAiQuestion = async (aiMode, prompt) => {
+  const trimmedPrompt = typeof prompt === 'string' ? prompt.trim() : '';
+  if (!trimmedPrompt) {
+    throw new Error('Prompt must be a non-empty string');
+  }
+
+  if (aiMode === 'gpt') {
+    return withTimeout(generateGptReply([{ role: 'user', content: trimmedPrompt }]), AI_TIMEOUT_MS);
+  }
+
+  return withTimeout(generateLlamaReply(trimmedPrompt), AI_TIMEOUT_MS);
+};
+
+const normalizeRecentAnswers = (input) => {
+  if (!Array.isArray(input)) {
+    return null;
+  }
+
+  const normalized = input
+    .map((entry) => ({
+      question: typeof entry?.question === 'string' ? entry.question : null,
+      answer: typeof entry?.answer === 'string' ? entry.answer : null,
+      question_id:
+        entry?.question_id !== undefined && entry?.question_id !== null
+          ? Number(entry.question_id)
+          : null,
+      type: entry?.type ?? null
+    }))
+    .filter((entry) => entry.question || entry.answer);
+
+  return normalized.length > 0 ? normalized : null;
+};
+
+const resolveNextQuestion = async (form, recentAnswers = null) => {
+  const answers = recentAnswers ?? ResponseModel.getRecentAnswers(form.id, 5);
+  const next = await OrchestratorService.decideNextQuestion(form.id, form.user_id, answers);
+
+  if (next.type === 'manual') {
+    return {
+      type: next.type,
+      question: next.question,
+      ai_mode: next.ai_mode,
+      meta: next.meta ?? null
+    };
+  }
+
+  try {
+    const aiResult = await requestAiQuestion(next.ai_mode, next.prompt);
+    const question = typeof aiResult === 'string' ? aiResult.trim() : '';
+
+    return {
+      type: 'ai',
+      question: question || AI_FALLBACK_QUESTION,
+      ai_mode: next.ai_mode,
+      meta: next.meta ?? null
+    };
+  } catch (error) {
+    console.error('Failed to generate AI question:', error);
+    return {
+      type: 'ai',
+      question: AI_FALLBACK_QUESTION,
+      ai_mode: next.ai_mode,
+      meta: next.meta ?? null
+    };
+  }
+};
 
 export const getConfig = (req, res) => {
   try {
@@ -72,41 +162,41 @@ export const getNextQuestion = async (req, res) => {
       return res.status(404).json({ message: 'Form not found' });
     }
 
-    const recentAnswersFromBody = Array.isArray(req.body?.recentAnswers)
-      ? req.body.recentAnswers
-          .map((entry) => ({
-            question: typeof entry?.question === 'string' ? entry.question : null,
-            answer: typeof entry?.answer === 'string' ? entry.answer : null,
-            question_id:
-              entry?.question_id !== undefined && entry?.question_id !== null
-                ? Number(entry.question_id)
-                : null,
-            type: entry?.type ?? null
-          }))
-          .filter((entry) => entry.question || entry.answer)
-      : null;
+    const recentAnswersFromBody = normalizeRecentAnswers(req.body?.recentAnswers);
+    const result = await resolveNextQuestion(form, recentAnswersFromBody);
 
-    const recentAnswers = recentAnswersFromBody ?? ResponseModel.getRecentAnswers(formId, 5);
-    const nextQuestion = await OrchestratorService.decideNextQuestion(
-      form.id,
-      form.user_id,
-      recentAnswers
-    );
-
-    return res.json({
-      type: nextQuestion.type,
-      question: nextQuestion.question,
-      ai_mode: nextQuestion.ai_mode,
-      meta: nextQuestion.meta ?? null
-    });
+    return res.json(result);
   } catch (error) {
     console.error('Failed to get next question:', error);
     return res.status(500).json({ message: 'Failed to get next question' });
   }
 };
 
+export const generateQuestion = async (req, res) => {
+  try {
+    const { form_id: formId } = req.body ?? {};
+    if (!formId) {
+      return res.status(400).json({ message: 'form_id is required' });
+    }
+
+    const form = FormModel.getFormById(formId);
+    if (!form) {
+      return res.status(404).json({ message: 'Form not found' });
+    }
+
+    const recentAnswersFromBody = normalizeRecentAnswers(req.body?.recentAnswers);
+    const result = await resolveNextQuestion(form, recentAnswersFromBody);
+
+    return res.json(result);
+  } catch (error) {
+    console.error('Failed to generate AI question:', error);
+    return res.status(500).json({ message: 'Failed to generate AI question' });
+  }
+};
+
 export const AiController = {
   getConfig,
   saveConfig,
-  getNextQuestion
+  getNextQuestion,
+  generateQuestion
 };

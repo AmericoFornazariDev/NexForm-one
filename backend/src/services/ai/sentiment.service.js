@@ -1,4 +1,4 @@
-import * as gptService from './gpt.service.js';
+import * as gptService from '../gpt.service.js';
 import * as llamaService from './llama.service.js';
 import { SentimentModel } from '../../models/sentiment.model.js';
 
@@ -30,10 +30,6 @@ const normalizeEntries = (answersText) => {
     .filter((entry) => entry.text);
 };
 
-const pickModel = (aiMode) => {
-  return aiMode === 'gpt' ? gptService : llamaService;
-};
-
 const normalizeSentiment = (value) => {
   if (!value) {
     return 'neutro';
@@ -63,7 +59,6 @@ export async function analyzeResponses(formId, aiMode, answersText) {
     return [];
   }
 
-  const model = pickModel(aiMode);
   const prompt = `
   Classifica o sentimento de cada resposta (positivo, neutro ou negativo).
   Retorna JSON no formato:
@@ -72,7 +67,10 @@ export async function analyzeResponses(formId, aiMode, answersText) {
   ${entries.map((item, index) => `${index + 1}. ${item.text}`).join('\n')}
   `;
 
-  const raw = await model.generateReply(prompt);
+  const raw =
+    aiMode === 'gpt'
+      ? await gptService.generateReply([{ role: 'user', content: prompt }])
+      : await llamaService.generateReply(prompt);
 
   let parsed;
   try {

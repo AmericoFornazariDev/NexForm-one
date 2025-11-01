@@ -1,8 +1,6 @@
 import { FormModel } from '../../models/form.model.js';
 import { AiConfigModel } from '../../models/ai_config.model.js';
 import { MerchantQuestionModel } from '../../models/merchant_question.model.js';
-import { generateReply as generateLlamaReply } from './llama.service.js';
-import { generateReply as generateGptReply } from './gpt.service.js';
 
 const SUPPORTED_AI_MODES = ['llama', 'gpt'];
 
@@ -37,16 +35,6 @@ const buildPrompt = (config, recentAnswers = []) => {
   return [intro, history, instruction].filter(Boolean).join('\n\n');
 };
 
-const generateAiQuestion = async (aiMode, prompt) => {
-  if (aiMode === 'gpt') {
-    const reply = await generateGptReply(prompt);
-    return reply.trim();
-  }
-
-  const reply = await generateLlamaReply(prompt);
-  return reply.trim();
-};
-
 export const decideNextQuestion = async (formId, userIdOrNull = null, recentAnswers = []) => {
   const form = FormModel.getFormById(formId);
   if (!form) {
@@ -75,11 +63,10 @@ export const decideNextQuestion = async (formId, userIdOrNull = null, recentAnsw
   }
 
   const prompt = buildPrompt(aiConfig ?? AiConfigModel.DEFAULT_CONFIG, recentAnswers);
-  const question = await generateAiQuestion(resolvedMode, prompt);
 
   return {
     type: 'ai',
-    question,
+    prompt,
     ai_mode: resolvedMode,
     meta: {
       tone: aiConfig?.tone ?? AiConfigModel.DEFAULT_CONFIG.tone,

@@ -4,6 +4,41 @@ import { FormModel } from '../models/form.model.js';
 import { AskedQuestionModel } from '../models/asked_question.model.js';
 import { MerchantQuestionModel } from '../models/merchant_question.model.js';
 import { OrchestratorService } from '../services/ai/orchestrator.service.js';
+import { generateReply as generateGptReply } from '../services/gpt.service.js';
+import { generateReply as generateLlamaReply } from '../services/ai/llama.service.js';
+
+const AI_TIMEOUT_MS = 2000;
+const AI_FALLBACK_QUESTION = 'Pode por favor explicar em uma única frase o que o incomodou mais?';
+
+const withTimeout = (promise, timeoutMs) =>
+  new Promise((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error('AI generation timeout'));
+    }, timeoutMs);
+
+    promise
+      .then((value) => {
+        clearTimeout(timer);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timer);
+        reject(error);
+      });
+  });
+
+const requestAiQuestion = async (aiMode, prompt) => {
+  const trimmedPrompt = typeof prompt === 'string' ? prompt.trim() : '';
+  if (!trimmedPrompt) {
+    throw new Error('Prompt must be a non-empty string');
+  }
+
+  if (aiMode === 'gpt') {
+    return withTimeout(generateGptReply([{ role: 'user', content: trimmedPrompt }]), AI_TIMEOUT_MS);
+  }
+
+  return withTimeout(generateLlamaReply(trimmedPrompt), AI_TIMEOUT_MS);
+};
 
 const responseSchema = z.object({
   type: z.enum(['manual', 'ai']).default('ai'),
@@ -64,12 +99,31 @@ export const handleResponse = async (req, res) => {
     const recentAnswers = ResponseModel.getRecentAnswers(form.id, 5);
     const next = await OrchestratorService.decideNextQuestion(form.id, form.user_id, recentAnswers);
 
+    let nextQuestionText = null;
+    let nextAiMode = next.ai_mode;
+
+    if (next.type === 'manual') {
+      nextQuestionText = next.question;
+    } else {
+      try {
+        const aiResult = await requestAiQuestion(next.ai_mode, next.prompt);
+        nextQuestionText = typeof aiResult === 'string' ? aiResult.trim() : '';
+      } catch (error) {
+        console.error('Failed to generate AI question after response:', error);
+        nextQuestionText = '';
+      }
+
+      if (!nextQuestionText) {
+        nextQuestionText = AI_FALLBACK_QUESTION;
+      }
+    }
+
     return res.json({
       saved: true,
       next: {
         type: next.type,
-        question: next.question,
-        ai_mode: next.ai_mode
+        question: nextQuestionText,
+        ai_mode: nextAiMode
       }
     });
   } catch (error) {

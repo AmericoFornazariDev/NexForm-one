@@ -5,8 +5,8 @@ const TABLE = 'ai_config';
 const DEFAULT_CONFIG = {
   tone: 'simpático',
   style: 'curta',
-  goal: 'satisfação geral',
-  ai_mode: 'llama'
+  goal: 'melhorar atendimento',
+  ai_mode: 'gpt'
 };
 
 const mapConfig = (row) => {

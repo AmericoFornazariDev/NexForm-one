@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Cpu, MessageSquare, SlidersHorizontal } from "lucide-react";
 import Navbar from "../components/Navbar.jsx";
 import Sidebar from "../components/Sidebar.jsx";
+import { getAIConfig, saveAIConfig } from "../services/api.js";
 
 const toneOptions = ["simpático", "formal", "técnico", "motivacional"];
 const styleOptions = ["curta", "detalhada", "analítica"];
@@ -11,6 +12,95 @@ export default function AISettings() {
   const [style, setStyle] = useState("curta");
   const [goal, setGoal] = useState("satisfação geral");
   const [aiMode, setAiMode] = useState("llama");
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState(null);
+  const [toastMessage, setToastMessage] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchConfig = async () => {
+      setIsLoading(true);
+      setError(null);
+
+      try {
+        const response = await getAIConfig();
+        if (!isMounted) return;
+
+        const data = response?.data ?? {};
+
+        if (typeof data.tone === "string" && toneOptions.includes(data.tone)) {
+          setTone(data.tone);
+        }
+
+        if (typeof data.style === "string" && styleOptions.includes(data.style)) {
+          setStyle(data.style);
+        }
+
+        if (typeof data.goal === "string" && data.goal.trim().length > 0) {
+          setGoal(data.goal);
+        }
+
+        if (typeof data.ai_mode === "string") {
+          const normalizedMode = data.ai_mode.toLowerCase();
+          if (["llama", "gpt"].includes(normalizedMode)) {
+            setAiMode(normalizedMode);
+          }
+        }
+      } catch (err) {
+        if (!isMounted) return;
+        console.error("Failed to load AI configuration", err);
+        setError("Não foi possível carregar a configuração da IA.");
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchConfig();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!toastMessage) {
+      return undefined;
+    }
+
+    const timeoutId = setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+
+    return () => {
+      clearTimeout(timeoutId);
+    };
+  }, [toastMessage]);
+
+  const isFormDisabled = isLoading || isSaving;
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    setError(null);
+
+    try {
+      await saveAIConfig({
+        tone,
+        style,
+        goal,
+        ai_mode: aiMode,
+      });
+      setToastMessage("Configurações guardadas com sucesso!");
+    } catch (err) {
+      console.error("Failed to save AI configuration", err);
+      setError("Não foi possível guardar as configurações da IA.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-nexform-surface">
@@ -25,12 +115,19 @@ export default function AISettings() {
             </p>
           </section>
 
+          {error && (
+            <div className="mb-6 rounded-2xl border border-red-200 bg-red-50/80 px-5 py-3 text-sm text-red-700 shadow-sm">
+              {error}
+            </div>
+          )}
+
           <section className="mt-8 grid gap-6 lg:grid-cols-3">
             <Card title="Tom e linguagem" icon={MessageSquare}>
               <label className="text-sm font-medium text-slate-600">Tom da IA</label>
               <select
                 value={tone}
                 onChange={(event) => setTone(event.target.value)}
+                disabled={isFormDisabled}
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
               >
                 {toneOptions.map((option) => (
@@ -44,6 +141,7 @@ export default function AISettings() {
               <select
                 value={style}
                 onChange={(event) => setStyle(event.target.value)}
+                disabled={isFormDisabled}
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
               >
                 {styleOptions.map((option) => (
@@ -60,6 +158,7 @@ export default function AISettings() {
                 type="text"
                 value={goal}
                 onChange={(event) => setGoal(event.target.value)}
+                disabled={isFormDisabled}
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
                 placeholder="ex: satisfação geral, atendimento, produto..."
               />
@@ -73,6 +172,7 @@ export default function AISettings() {
               <select
                 value={aiMode}
                 onChange={(event) => setAiMode(event.target.value)}
+                disabled={isFormDisabled}
                 className="mt-2 w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-700 transition focus:border-violet-300 focus:outline-none focus:ring-2 focus:ring-violet-200"
               >
                 <option value="llama">LLaMA · execução local</option>
@@ -90,13 +190,21 @@ export default function AISettings() {
           <div className="mt-8 flex justify-end">
             <button
               type="button"
+              onClick={handleSave}
+              disabled={isFormDisabled}
               className="rounded-2xl bg-gradient-to-r from-violet-500 to-indigo-600 px-8 py-3 font-semibold text-white shadow-lg shadow-violet-200 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-xl hover:shadow-violet-300"
             >
-              Guardar configurações
+              {isSaving ? "A guardar..." : isLoading ? "A carregar..." : "Guardar configurações"}
             </button>
           </div>
         </main>
       </div>
+
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3 text-sm font-medium text-emerald-700 shadow-lg shadow-emerald-100">
+          {toastMessage}
+        </div>
+      )}
     </div>
   );
 }
